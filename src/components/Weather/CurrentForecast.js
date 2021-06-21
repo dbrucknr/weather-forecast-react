@@ -1,34 +1,35 @@
 import React, { Component } from 'react';
-import OpenWeatherMapService from '../../services/OpenWeatherMapService';
 
-const API_KEY =`${process.env.REACT_APP_API_KEY}`
 
 class CurrentForecast extends Component {
     constructor(props) {
         super(props);
         this.state = {
             forecast: {},
-            city: null,
-            state: null,
-            autoShowSearchTemplate: false
+            location: {}
         }
     }
 
-    async componentDidMount() {
-        if (this.props.usingBrowserLocation) {
-            const autoLocate = await this.props.browserLocation;
-            console.log(autoLocate)
-            const { latitude, longitude, city, principalSubdivision } = autoLocate;
-            console.log(latitude, longitude, API_KEY)
-            this.setState({ city: city, state: principalSubdivision })
-            await OpenWeatherMapService.getCurrentWeather(latitude, longitude, API_KEY)
-                .then((response) => this.setState({ forecast: response.data }))
-                .catch(() =>this.setState({ autoShowSearchTemplate: true }))
+    static getDerivedStateFromProps(props) {
+        return {
+            forecast: props.forecast,
+            location: props.location
         }
     }
+    
 
     getCurrentForecast() {
-        return Object.keys(this.state.forecast)
+        const { temp, feels_like, temp_min, temp_max, humidity } = this.state.forecast.main;
+        const { description, icon, main } = this.state.forecast.weather[0];
+        return (
+            <div>
+                Temperature: { temp }<br />
+                Feels Like: { feels_like }<br />
+                Minimum Temperature: { temp_min }<br />
+                Maximum Temperature: { temp_max }<br />
+                Humidity: { humidity }<br />
+            </div>
+        )
     }
     
     render() {
@@ -36,8 +37,7 @@ class CurrentForecast extends Component {
             <div>
                 <h1>Current Forecast</h1>
                 <div>
-                    { this.state.city }, { this.state.state }
-                    { this.getCurrentForecast() } 
+                   { this.getCurrentForecast() }
                 </div>
             </div>
         )
